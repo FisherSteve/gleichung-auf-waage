@@ -1,0 +1,2209 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Gleichungen auf der Waage</title>
+  <style>
+    :root {
+      --paper: #f0f2e9;
+      --card: #fffefa;
+      --ink: #182e28;
+      --quiet: #466055;
+      --line: #d1dcd0;
+      --green: #215b4b;
+      --deep: #153e34;
+      --mint: #e5eee3;
+      --orange: #842f24;
+      --purple: #503275;
+      --motion: 350ms cubic-bezier(.23,.77,.25,1);
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      font-synthesis: none;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-width: 280px; }
+    h1, h2, p { margin: 0; }
+    button, input, select { font: inherit; color: inherit; }
+    button, select, input[type="range"] { cursor: pointer; }
+    svg { display: block; }
+    :focus-visible { outline: 3px solid #376ad1; outline-offset: 3px; }
+    .app {
+      max-inline-size: 1470px;
+      margin-inline: auto;
+      padding: clamp(16px, 2vw, 29px) clamp(14px, 3vw, 46px) 14px;
+    }
+
+    .masthead, .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .masthead { justify-content: space-between; margin-block-end: 13px; }
+    .mark {
+      display: grid;
+      flex: none;
+      place-items: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 13px;
+      color: white;
+      background: var(--deep);
+    }
+
+    .mark svg { width: 32px; height: 32px; }
+    .eyebrow {
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .085em;
+      text-transform: uppercase;
+      margin-block-end: 3px;
+    }
+
+    h1 { font-size: clamp(26px, 3.15vw, 45px); line-height: 1.06; letter-spacing: -.044em; }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-block-size: 38px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-weight: 670;
+      line-height: 1.17;
+    }
+
+    .button svg { width: 17px; height: 17px; flex: none; }
+    .solid { background: var(--green); color: white; }
+    .solid:hover { background: var(--deep); }
+    .plain { background: var(--card); border-color: #b9cabb; }
+    .plain:hover { background: var(--mint); }
+    .button[aria-disabled="true"] { cursor: default; }
+    .solid[aria-disabled="true"], .plain[aria-disabled="true"] { color: #5a6d62; background: #eef1ea; }
+    #fullscreen { flex: none; }
+
+    .tabs { display: flex; gap: 5px; border-block-end: 1px solid #beccbe; }
+    .tab {
+      position: relative;
+      padding: 8px 16px 10px;
+      min-block-size: 40px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 9px 9px 0 0;
+      color: var(--quiet);
+      font-size: clamp(15px, 1.45vw, 18px);
+      font-weight: 710;
+    }
+
+    .tab:hover { background: var(--mint); }
+    .tab[aria-selected="true"] { background: var(--card); color: var(--deep); border-color: var(--line) var(--line) transparent; }
+    .tab[aria-selected="true"]::after {
+      content: "";
+      position: absolute;
+      inset: auto 9px -1px;
+      height: 3px;
+      border-radius: 3px 3px 0 0;
+      background: var(--green);
+    }
+
+    .entry { margin-block: 10px; }
+    .entry-bar, .entry-row { display: flex; gap: 8px; align-items: end; }
+    .entry-row { margin-block-start: 8px; }
+    .field { flex: 1; min-width: 0; }
+    .field label, .small-label {
+      display: block;
+      margin-block-end: 4px;
+      color: var(--quiet);
+      font-size: 13px;
+      font-weight: 730;
+    }
+
+    .equation-input, select, .value {
+      min-block-size: 38px;
+      border: 1px solid #aabdae;
+      border-radius: 8px;
+      padding: 5px 9px;
+      background: var(--card);
+    }
+
+    .equation-input { width: 100%; font-size: clamp(16px, 1.7vw, 22px); font-weight: 640; }
+    .preset { width: min(100%, 240px); min-width: 0; }
+    .preset select { width: 100%; font-size: 14px; font-weight: 620; padding-inline-end: 3px; }
+    .help { position: relative; flex: none; color: var(--deep); }
+    .help summary {
+      display: grid;
+      place-items: center;
+      list-style: none;
+      width: 31px;
+      height: 38px;
+      font-size: 14px;
+      font-weight: 750;
+      border-radius: 7px;
+      cursor: pointer;
+    }
+
+    .help summary::-webkit-details-marker { display: none; }
+    .help summary:hover { background: var(--mint); }
+    .help p {
+      position: absolute;
+      z-index: 7;
+      inset: 100% 0 auto auto;
+      width: min(310px, 83vw);
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px #142e291f;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .error { margin-block: 6px; color: var(--orange); font-size: 14px; font-weight: 680; }
+    [aria-invalid="true"] { border: 2px solid var(--orange); }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #e8eee4;
+      margin-block: 0 10px;
+    }
+
+    .move-choice { min-width: 0; margin: 0; border: 0; padding: 0; }
+    .segmented, .history, .result-actions { display: flex; align-items: center; gap: 6px; }
+    .value {
+      width: 55px;
+      min-block-size: 32px;
+      padding: 4px 3px;
+      font-size: 15px;
+      text-align: center;
+      font-weight: 670;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .segmented { gap: 2px; border: 1px solid #adbeaf; border-radius: 8px; padding: 2px; }
+    .move-setting {
+      position: relative;
+      display: inline-flex;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: 670;
+      cursor: pointer;
+    }
+
+    .move-setting span { display: block; padding: 5px 7px; border-radius: inherit; }
+    .move-setting input:checked + span { color: white; background: var(--green); }
+    .move-setting input:focus-visible + span { outline: 3px solid #376ad1; outline-offset: 3px; }
+    .history { margin-inline-start: auto; }
+    .history .button { min-block-size: 34px; font-size: 14px; }
+    .tip {
+      color: var(--quiet);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .tip { margin: -3px 2px 8px; overflow-wrap: anywhere; }
+
+    .system-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .source-list { display: grid; gap: 9px; }
+    #result-board { display: grid; }
+    .balance-card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--card);
+      box-shadow: 0 2px 6px #1835290a;
+    }
+
+    .board-heading {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 12px 4px;
+    }
+
+    .origin {
+      display: grid;
+      place-items: center;
+      flex: none;
+      min-width: 36px;
+      height: 26px;
+      padding-inline: 3px;
+      border-radius: 5px;
+      color: #1a5945;
+      background: #e1ece2;
+      font-size: 14px;
+      font-weight: 760;
+    }
+
+    [data-board="ii"] .origin { color: #68471f; background: #f3e9d9; }
+    .board-title {
+      color: var(--deep);
+      font-size: 15px;
+      font-weight: 750;
+    }
+
+    .origin:not([hidden]) + .board-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .equation-stack { min-width: 0; }
+    .current-line, .work-line { display: flex; align-items: baseline; gap: .45em; flex-wrap: wrap; }
+    .work-line {
+      color: #405d51;
+      font-size: clamp(14px, 1.55vw, 22px);
+      font-weight: 650;
+      font-variant-numeric: lining-nums tabular-nums;
+      line-height: 1.22;
+      overflow-wrap: anywhere;
+      margin-block-end: 4px;
+    }
+
+    .work-before { min-width: 0; }
+    .work-operator { color: var(--deep); font-weight: 760; }
+    .work-line:not([hidden]) { animation: show-work 220ms ease-out; }
+    @keyframes show-work { from { opacity: .4; } to { opacity: 1; } }
+    .live-operator {
+      color: var(--deep);
+      background: var(--mint);
+      border-radius: 5px;
+      padding: 2px 6px;
+      font-size: clamp(17px, 2.21vw, 28px);
+      font-weight: 750;
+    }
+
+    .single-card .current-line, .single-card .work-line,
+    .result-card .current-line, .result-card .work-line { justify-content: center; text-align: center; }
+    .single-card .equation-stack, .result-card .equation-stack { padding-inline: 8px; }
+    .equation {
+      font-size: clamp(23px, 2.55vw, 38px);
+      font-weight: 670;
+      line-height: 1.12;
+      overflow-wrap: anywhere;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+
+    .board-tools {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-inline-start: auto;
+      align-self: flex-start;
+      flex: none;
+    }
+
+    .board-tools > .button, .operation-menu > summary {
+      min-block-size: 29px;
+      padding: 4px 6px;
+      font-size: 13px;
+    }
+
+    .send-group {
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .send-group[aria-disabled="true"] { opacity: .65; }
+    .operation-menu { position: relative; }
+    .operation-menu > summary { list-style: none; white-space: nowrap; cursor: pointer; }
+    .operation-menu > summary::-webkit-details-marker { display: none; }
+    .operation-menu[open] > summary { background: var(--mint); }
+    .operation-menu:not([open]) > .operation-panel { display: none; }
+    .operation-panel {
+      position: absolute;
+      z-index: 12;
+      inset: calc(100% + 5px) 0 auto auto;
+      display: grid;
+      gap: 8px;
+      width: min(275px, 87vw);
+      padding: 9px;
+      border: 1px solid #a9bfad;
+      border-radius: 9px;
+      background: var(--card);
+      box-shadow: 0 7px 18px #182e2833;
+    }
+
+    .operation-panel .button { min-block-size: 35px; padding-inline: 7px; font-size: 14px; }
+    .split-shortcuts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+    .split-shortcuts small { display: block; color: var(--quiet); font-size: 12px; font-weight: 550; }
+    .split-shortcuts .button { display: block; padding-inline: 1px; }
+    .custom-division > summary { cursor: pointer; color: var(--deep); font-size: 14px; font-weight: 650; }
+    .custom-division form { margin-block-start: 8px; }
+    .division-entry { display: flex; gap: 4px; }
+    .division-entry .value { flex: 1; width: 75px; min-width: 0; text-align: start; padding-inline: 7px; }
+    .operation-panel .error { margin: 0; }
+    .single-card .board-heading { padding: 12px 14px 0; }
+    .single-card .equation {
+      text-align: center;
+      padding: 3px 10px;
+      font-size: clamp(33px, 5vw, 66px);
+    }
+
+    .scene {
+      --swing: 17px;
+      --below: 38px;
+      --connection: 8px;
+      --metal: #326254;
+      --pan-color: #d6e7da;
+      --tile-height: 36px;
+      position: relative;
+      isolation: isolate;
+      margin-inline: 8px;
+      padding-block: var(--swing) var(--below);
+      border-radius: 8px;
+      background: radial-gradient(circle, #73917e2c 1px, transparent 1.4px) center / 16px 16px;
+    }
+
+    .single-card .scene {
+      --swing: clamp(24px, 4vw, 48px);
+      --below: clamp(63px, 10vw, 110px);
+      --connection: clamp(11px, 2vw, 22px);
+      --tile-height: clamp(49px, 5vw, 67px);
+      max-inline-size: 1080px;
+      width: calc(100% - 20px);
+      margin-inline: auto;
+    }
+
+    .pans {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: end;
+    }
+
+    .assembly {
+      position: relative;
+      z-index: 2;
+      width: 80%;
+      min-width: 0;
+      justify-self: center;
+      transform: translate(var(--offset-x, 0px), var(--offset-y, 0px));
+      transition: transform var(--motion);
+    }
+
+    .shelf {
+      display: grid;
+      align-items: end;
+      justify-items: center;
+      min-block-size: calc(var(--tile-height) + 2px);
+      padding: 0 2px 1px;
+      border: 1px solid transparent;
+      border-radius: 7px 7px 0 0;
+    }
+
+    .tiles {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .tile {
+      display: block;
+      max-width: 100%;
+      min-height: var(--tile-height, 36px);
+      min-width: 35px;
+      padding: 3px 7px 4px;
+      border: 1px solid #71a290;
+      border-radius: 6px;
+      color: #1f5243;
+      background: #e1eee5;
+      box-shadow: inset 0 -2px #285c4824;
+      font-size: clamp(18px, 2vw, 29px);
+      font-weight: 700;
+      line-height: 1.07;
+      text-align: center;
+      overflow-wrap: anywhere;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .tile.variable { color: var(--purple); background: #eee6f7; border-color: #a68bbd; }
+    .tile.minus { color: var(--orange); background: #fae8e1; border: 1px dashed #b27665; }
+    .tile:hover { filter: brightness(.96); }
+    span.tile { cursor: default; touch-action: auto; }
+    .tile.long { font-size: clamp(15px, 1.32vw, 20px); }
+    .single-card .tile, .ghost-large .tile { padding: 5px 12px 7px; min-width: 48px; font-size: clamp(24px, 3.6vw, 47px); }
+    .single-card .tile.long, .ghost-large .tile.long { font-size: clamp(19px, 2.6vw, 32px); }
+    .empty-pan { color: #62776b; padding: 3px 8px; font-size: 18px; line-height: 1.2; }
+    .drop-hint .shelf { border-color: #79a694; border-style: dashed; background: #f0f7ee; }
+    .drop-over .shelf { border-color: var(--green); border-style: solid; background: #dceee0; }
+
+    .tiles.portion-layout { width: 100%; }
+    .division-portions {
+      display: grid;
+      grid-template-columns: repeat(var(--parts), minmax(0, 1fr));
+      gap: 3px;
+      width: 100%;
+      animation: show-portions 250ms ease-out both;
+    }
+
+    .portion {
+      display: grid;
+      align-content: center;
+      min-height: var(--tile-height);
+      padding: 2px;
+      border: 1px dashed #809487;
+      border-radius: 5px;
+      color: #375347;
+      background: #f1f5ed;
+      text-align: center;
+      font-size: clamp(13px, 1.6vw, 23px);
+      font-weight: 700;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .portion.keep { color: var(--deep); background: #d9efdd; border: 2px solid var(--green); }
+    .portion-share { display: block; font-size: .72em; font-weight: 550; margin-block-end: 1px; }
+    @keyframes show-portions { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .division-step {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 5px 8px 8px;
+      padding: 6px 7px;
+      background: var(--mint);
+      border-radius: 7px;
+    }
+
+    .division-stage-status { flex: 1 1 150px; font-size: 14px; line-height: 1.25; }
+    .division-step .button { font-size: 14px; min-block-size: 34px; }
+
+    .dish { width: 100%; height: 12px; color: var(--metal); }
+    .dish path { fill: var(--pan-color); stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .post { width: 3px; height: var(--connection); margin-inline: auto; background: var(--metal); }
+    .arm {
+      position: absolute;
+      z-index: 1;
+      left: 25%;
+      width: 50%;
+      height: 4px;
+      bottom: calc(var(--below) - 2px);
+      border-radius: 4px;
+      background: var(--metal);
+      transform: rotate(var(--angle, 0deg));
+      transition: transform var(--motion);
+    }
+
+    .stand {
+      position: absolute;
+      left: 50%;
+      bottom: 2px;
+      width: clamp(36px, 10%, 84px);
+      height: calc(var(--below) - 1px);
+      transform: translateX(-50%);
+      color: var(--metal);
+    }
+
+    .stand path { fill: var(--pan-color); stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .pivot {
+      position: absolute;
+      z-index: 3;
+      bottom: calc(var(--below) - 5px);
+      left: 50%;
+      width: 11px;
+      height: 11px;
+      border: 2px solid var(--metal);
+      border-radius: 50%;
+      background: var(--card);
+      transform: translateX(-50%);
+    }
+
+    .balance-status {
+      margin: 0 8px 7px;
+      color: var(--orange);
+      font-size: clamp(13px, 1.45vw, 18px);
+      font-weight: 680;
+      text-align: center;
+    }
+
+    .no-balance :is(.arm, .stand, .pivot, .post) { visibility: hidden; }
+    .result-card {
+      display: flex;
+      flex-direction: column;
+      border-color: #b8ccb9;
+      background: #fcfdf7;
+    }
+
+    .result-card .board-heading { justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+    .result-card .board-title { font-size: clamp(17px, 1.85vw, 24px); letter-spacing: -.02em; }
+    .result-card .scene { --swing: 22px; --below: 46px; }
+    .result-interior { display: grid; align-content: center; flex: 1; gap: 6px; padding-block: 4px 6px; }
+    .result-card .equation { text-align: center; padding-inline: 9px; font-size: clamp(25px, 3vw, 46px); }
+    .result-count { color: var(--deep); background: var(--mint); border-radius: 5px; padding: 3px 7px; font-size: 13px; font-weight: 730; }
+    .result-footer { padding: 8px 10px 9px; border-block-start: 1px solid #d5e1d5; background: #f0f5eb; border-radius: 0 0 12px 12px; }
+    .result-status { min-height: 2.65em; margin-block-end: 6px; font-size: clamp(14px, 1.32vw, 18px); line-height: 1.3; }
+    .result-actions { flex-wrap: wrap; }
+    .result-actions .solid { flex: 1 1 auto; }
+    .result-actions .plain { flex: 0 0 auto; }
+
+    .presenting .app { padding-block-start: 9px; }
+    .presenting .masthead { margin-block-end: 7px; }
+    .presenting .mark { width: 36px; height: 36px; border-radius: 8px; }
+    .presenting .mark svg { width: 25px; height: 25px; }
+    .presenting .eyebrow { display: none; }
+    .presenting h1 { font-size: clamp(21px, 2.45vw, 35px); }
+    .presenting .tab { min-block-size: 36px; padding-block: 6px 8px; }
+    .presenting .entry { margin-block: 7px 8px; }
+    .presenting .single-card .equation { font-size: clamp(34px, 5.6vw, 76px); }
+    .presenting .result-card .equation { font-size: clamp(26px, 3.35vw, 52px); }
+    .presenting .result-status { min-height: 0; }
+
+    @media (min-width: 850px) {
+      .presenting .system-grid { grid-template-columns: minmax(0, .93fr) minmax(0, 1.13fr); }
+    }
+
+    @media (min-width: 850px) and (max-height: 760px) {
+      .presenting .source-card .scene { --swing: 14px; --below: 31px; }
+      .presenting .source-list { gap: 7px; }
+    }
+
+    .flight {
+      position: fixed;
+      z-index: 9;
+      margin: 0;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 5px #16392e46);
+      user-select: none;
+    }
+
+    .flight * { pointer-events: none; }
+    .moving-from { opacity: .62; }
+    body.dragging, body.dragging * { cursor: grabbing !important; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    @media (min-width: 1050px) and (min-height: 835px) {
+      .entry { margin-block: 15px 13px; }
+      .controls { margin-block-end: 13px; }
+      .source-list { gap: 12px; }
+      .scene { --swing: 23px; --below: 45px; --connection: 10px; --tile-height: 42px; }
+      .result-card .scene { --swing: 25px; --below: 63px; --tile-height: 46px; }
+      .source-card .board-heading { padding-block: 13px 7px; }
+    }
+
+    @media (max-width: 990px) {
+      .controls { gap: 7px 12px; flex-wrap: wrap; align-items: end; }
+      .history .button { padding-inline: 7px; }
+      .result-actions .button { padding-inline: 7px; font-size: 14px; }
+    }
+
+    @media (max-width: 660px) {
+      .masthead, .brand { gap: 7px; }
+      .mark { width: 35px; height: 35px; border-radius: 8px; }
+      .mark svg { width: 25px; height: 25px; }
+      .eyebrow { font-size: 9px; letter-spacing: .03em; }
+      h1 { font-size: clamp(20px, 5.1vw, 32px); }
+      #fullscreen { padding-inline: 7px; }
+      #fullscreen-text { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+      .entry-bar, .entry-row { flex-wrap: wrap; gap: 6px 7px; }
+      .entry .field { flex: 1 1 44%; }
+      .preset { flex: 1 1 120px; }
+      .controls { padding: 7px; }
+      .tip { font-size: 12px; }
+      .system-grid { grid-template-columns: minmax(0, 1fr); gap: 9px; }
+      .result-actions .solid { flex-basis: 55%; }
+      .result-card .result-count { font-size: 12px; padding-inline: 4px; }
+    }
+
+    @media (max-width: 355px) {
+      .mark { display: none; }
+      .tab { padding-inline: 11px; }
+      .tile { min-width: 30px; padding-inline: 5px; }
+      .segmented { width: 100%; }
+      .move-setting span { padding-inline: 6px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .arm, .assembly { transition: none; }
+      .division-portions, .work-line { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="masthead">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 7v17m-10-13h20M8 11l-4 9h8l-4-9m20 0-4 9h8l-4-9M4 20c1 4 7 4 8 0m12 0c1 4 7 4 8 0M12.5 29l5.5-6 5.5 6z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="eyebrow">Lineare Gleichungssysteme</p>
+          <h1>Gleichungen auf der Waage</h1>
+        </div>
+      </div>
+      <button class="button plain" id="fullscreen" type="button" aria-label="Tafelansicht öffnen" aria-pressed="false">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path id="fullscreen-icon" d="M4 9V4h5m6 0h5v5m0 6v5h-5m-6 0H4v-5"/>
+        </svg>
+        <span id="fullscreen-text">Tafelansicht</span>
+      </button>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Ansicht">
+      <button class="tab" id="tab-single" type="button" role="tab" aria-selected="true" aria-controls="single">Eine Gleichung</button>
+      <button class="tab" id="tab-system" type="button" role="tab" aria-selected="false" aria-controls="system" tabindex="-1">Gleichsetzen</button>
+    </div>
+
+    <section id="single" role="tabpanel" aria-labelledby="tab-single">
+      <form class="entry" id="single-form" novalidate>
+        <div class="entry-bar">
+          <div class="preset">
+            <label class="small-label" for="single-preset">Beispiele</label>
+            <select id="single-preset">
+              <option value="" hidden>Eigene Eingabe</option>
+              <optgroup label="Für die Vorführung">
+                <option value="start" selected>Start mit y = 3x + 2</option>
+                <option value="simple">Einfach umstellen</option>
+                <option value="solve">Umstellen und teilen</option>
+              </optgroup>
+              <optgroup label="Weitere Beispiele">
+                <option value="identity">Gleichgewicht bei y = y</option>
+                <option value="half">Direkt halbieren</option>
+                <option value="third">Direkt dritteln</option>
+                <option value="negative">Mit Minuszahlen</option>
+              </optgroup>
+            </select>
+          </div>
+          <button class="button plain" id="single-edit" type="button" aria-controls="single-entry" aria-expanded="false">Eigene Eingabe</button>
+        </div>
+        <div class="entry-row" id="single-entry" hidden>
+          <div class="field">
+            <label for="single-input">Gleichung</label>
+            <input class="equation-input" id="single-input" type="text" value="y = 3x + 2" maxlength="120" autocomplete="off" spellcheck="false" aria-errormessage="single-error">
+          </div>
+          <button class="button solid" type="submit">Auf die Waage</button>
+          <details class="help">
+            <summary title="Eingabehilfe"><span aria-hidden="true">ⓘ</span><span class="sr-only">Eingabehilfe</span></summary>
+            <p>Erlaubt sind x und y, Klammern, Dezimalzahlen und Brüche. Jeder Summand außerhalb einer Klammer erhält einen eigenen Baustein.</p>
+          </details>
+        </div>
+        <p class="error" id="single-error" role="alert" hidden></p>
+      </form>
+      <div class="control-slot" id="single-controls"></div>
+      <div id="single-board"></div>
+    </section>
+
+    <section id="system" role="tabpanel" aria-labelledby="tab-system" hidden>
+      <form class="entry" id="system-form" novalidate>
+        <div class="entry-bar">
+          <div class="preset">
+            <label class="small-label" for="system-preset">Beispiele</label>
+            <select id="system-preset">
+              <option value="" hidden>Eigene Eingabe</option>
+              <optgroup label="Für die Vorführung">
+                <option value="third" selected>Ein System lösen</option>
+              </optgroup>
+              <optgroup label="Weitere Beispiele">
+                <option value="positive">Gleichsetzen erkunden</option>
+                <option value="half">Gleichsetzen und halbieren</option>
+                <option value="coefficients">Erst durch 2 und 3 teilen</option>
+                <option value="negative">Mit Minuszahlen</option>
+              </optgroup>
+              <optgroup label="Reserve">
+                <option value="parallel">Keine Lösung</option>
+              </optgroup>
+            </select>
+          </div>
+          <button class="button plain" id="system-edit" type="button" aria-controls="system-entry" aria-expanded="false">Eigene Eingabe</button>
+        </div>
+        <div class="entry-row" id="system-entry" hidden>
+          <div class="field">
+            <label for="system-first">Gleichung (I)</label>
+            <input class="equation-input" id="system-first" value="y = 4x + 1" maxlength="120" autocomplete="off" spellcheck="false" aria-errormessage="system-error">
+          </div>
+          <div class="field">
+            <label for="system-second">Gleichung (II)</label>
+            <input class="equation-input" id="system-second" value="y = x + 7" maxlength="120" autocomplete="off" spellcheck="false" aria-errormessage="system-error">
+          </div>
+          <button class="button solid" type="submit">Auf die Waagen</button>
+          <details class="help">
+            <summary title="Eingabehilfe"><span aria-hidden="true">ⓘ</span><span class="sr-only">Eingabehilfe</span></summary>
+            <p>Links darf y mit einem Faktor stehen, zum Beispiel 2y oder 3y. Rechts kannst du x, Klammern, Dezimalzahlen und Brüche verwenden. Zum Gleichsetzen müssen die linken Seiten gleich sein. Überträgst du unterschiedliche Vielfache von y direkt, zeigt die Vergleichswaage ein Ungleichgewicht.</p>
+          </details>
+        </div>
+        <p class="error" id="system-error" role="alert" hidden></p>
+      </form>
+      <div class="control-slot" id="system-controls"></div>
+      <div class="system-grid">
+        <div class="source-list" id="source-boards"></div>
+        <div id="result-board"></div>
+      </div>
+    </section>
+
+    <noscript>Aktiviere JavaScript im Browser, um die Waagen zu bedienen.</noscript>
+  </main>
+
+  <template id="controls-template">
+    <div class="control-area">
+      <div class="controls">
+        <fieldset class="move-choice">
+          <legend class="small-label">Summanden bewegen</legend>
+          <div class="segmented">
+            <label class="move-setting">
+              <input class="sr-only" type="radio" name="action" value="transpose" checked>
+              <span>Mit Vorzeichenwechsel</span>
+            </label>
+            <label class="move-setting">
+              <input class="sr-only" type="radio" name="action" value="move">
+              <span>Verschieben</span>
+            </label>
+          </div>
+        </fieldset>
+        <div class="history">
+          <button type="button" class="button plain" id="undo" aria-label="Letzten Schritt rückgängig machen" aria-disabled="true">Rückgängig</button>
+          <button type="button" class="button plain" id="restore" aria-label="Waagen zurücksetzen" aria-disabled="true">Ausgangslage</button>
+        </div>
+      </div>
+      <p id="tip" class="tip" role="status"></p>
+    </div>
+  </template>
+
+  <template id="board-template">
+    <article class="balance-card">
+      <header class="board-heading">
+        <span class="origin" aria-hidden="true" hidden></span>
+        <h2 class="board-title"></h2>
+        <div class="equation-stack">
+          <p class="work-line" hidden><span class="work-before"></span><span class="work-operator"></span></p>
+          <div class="current-line"><p class="equation"></p><span class="live-operator" hidden></span></div>
+        </div>
+        <span class="result-count" aria-hidden="true" hidden></span>
+        <div class="board-tools">
+          <details class="operation-menu">
+            <summary class="button plain">Umformen</summary>
+            <div class="operation-panel">
+              <button class="button plain collect" type="button">Terme zusammenfassen</button>
+              <div>
+                <p class="small-label">Beide Seiten</p>
+                <div class="split-shortcuts">
+                  <button class="button plain simple-divide" type="button" data-divisor="2">Halbieren <small>: 2</small></button>
+                  <button class="button plain simple-divide" type="button" data-divisor="3">Dritteln <small>: 3</small></button>
+                  <button class="button plain simple-divide" type="button" data-divisor="4">Vierteln <small>: 4</small></button>
+                </div>
+              </div>
+              <details class="custom-division">
+                <summary>Durch andere Zahl teilen</summary>
+                <form class="division-form" novalidate>
+                  <label class="small-label divisor-label">Beide Seiten teilen durch</label>
+                  <div class="division-entry">
+                    <input class="value divisor" type="text" inputmode="decimal" maxlength="32" placeholder="z. B. 5" autocomplete="off">
+                    <button class="button solid" type="submit">Teilen</button>
+                  </div>
+                </form>
+              </details>
+              <p class="error division-error" role="alert" hidden></p>
+            </div>
+          </details>
+          <button class="button plain send-group" type="button" hidden>
+            <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 10h13m-5-5 5 5-5 5"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+      <div class="board-interior">
+        <div class="scene">
+          <div class="pans"></div>
+          <div class="arm" aria-hidden="true"></div>
+          <svg class="stand" viewBox="0 0 70 58" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M35 2 64 54H6Z"/>
+          </svg>
+          <div class="pivot" aria-hidden="true"></div>
+        </div>
+        <p class="balance-status" role="status" hidden></p>
+      </div>
+      <div class="division-step" hidden>
+        <p class="division-stage-status" role="status"></p>
+        <button class="button solid confirm-division" type="button"></button>
+        <button class="button plain cancel-division" type="button">Abbrechen</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="pan-template">
+    <div class="assembly">
+      <div class="shelf">
+        <div class="tiles"></div>
+      </div>
+      <svg class="dish" viewBox="0 0 240 18" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M2 2h236l-9 9q-5 5-15 5H26q-10 0-15-5z"/>
+      </svg>
+      <div class="post" aria-hidden="true"></div>
+    </div>
+  </template>
+
+  <template id="result-footer-template">
+    <div class="result-footer">
+      <p class="result-status" id="result-status" role="status"></p>
+      <div class="result-actions">
+        <button class="button solid" id="step" type="button"></button>
+        <button class="button solid" id="substitute" type="button" hidden>x einsetzen</button>
+        <button class="button plain" id="replay" type="button">Neu zeigen</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+"use strict";
+
+const byId = (id) => document.getElementById(id);
+
+// Intern bleibt jeder Summand ein Vektor [Koeffizient von x, Koeffizient von y, Konstante].
+// Brüche halten Umformungen exakt, auch bei Dezimalzahlen.
+function fraction(n, d = 1n) {
+  if (d === 0n) throw new Error("Der Nenner muss ungleich null sein.");
+  if (d < 0n) return fraction(-n, -d);
+  let a = n < 0n ? -n : n;
+  let b = d;
+  while (b !== 0n) [a, b] = [b, a % b];
+  return { n: n / a, d: d / a };
+}
+
+const zero = fraction(0n);
+const one = fraction(1n);
+const xTerm = [one, zero, zero];
+const yTerm = [zero, one, zero];
+const blank = [zero, zero, zero];
+
+function add(a, b, sign = 1n) {
+  return fraction(a.n * b.d + sign * b.n * a.d, a.d * b.d);
+}
+
+function multiply(a, b) {
+  return fraction(a.n * b.n, a.d * b.d);
+}
+
+function addTerms(a, b, sign) {
+  return a.map((value, index) => add(value, b[index], sign));
+}
+
+function scaleTerm(term, factor) {
+  return term.map((value) => multiply(value, factor));
+}
+
+function isConstant(term) {
+  return term[0].n === 0n && term[1].n === 0n;
+}
+
+function multiplyTerms(a, b) {
+  if (isConstant(a)) return scaleTerm(b, a[2]);
+  if (isConstant(b)) return scaleTerm(a, b[2]);
+  throw new Error("Bei einem Produkt darf nur ein Faktor eine Variable enthalten, wie in 2(x + 1).");
+}
+
+function normalize(input) {
+  return input.toLowerCase().replace(/[−–—]/g, "-").replace(/[·⋅×]/g, "*").replace(/[÷:]/g, "/").trim();
+}
+
+function checkSize(values) {
+  if (values.some(({ n, d }) => String(n < 0n ? -n : n).length > 12 || String(d).length > 12)) {
+    throw new Error("Verwende kleinere Zahlen, damit sie auf die Waage passen.");
+  }
+}
+
+function showFraction(value) {
+  if (value.n < 0n) return "−" + showFraction({ n: -value.n, d: value.d });
+  if (value.d === 1n) return String(value.n);
+  for (let places = 1; places <= 5; places++) {
+    const unit = 10n ** BigInt(places);
+    if (unit % value.d !== 0n) continue;
+    const digits = String(value.n * (unit / value.d)).padStart(places + 1, "0");
+    return digits.slice(0, -places) + "," + digits.slice(-places);
+  }
+  return value.n + "/" + value.d;
+}
+
+function showTokens(tokens) {
+  return tokens.map((token, index) => {
+    if (token === "+" || token === "-") {
+      const sign = token === "-" ? "−" : "+";
+      return index > 0 && !["(", "*", "/", "+", "-"].includes(tokens[index - 1]) ? " " + sign + " " : sign;
+    }
+    if (token === "*") return "·";
+    if (/[xy]/.test(token) && tokens.slice(0, index).join("").match(/\/[\d.,]+$/)) return "·" + token;
+    return token.replace(".", ",").replace(/^,/, "0,");
+  }).join("");
+}
+
+let nextId = 0;
+
+function parseSide(text, allowY = true) {
+  const pattern = /\s*(\d+(?:[.,]\d+)?|[.,]\d+|[xy()+\-*/])/y;
+  const tokens = [];
+  while (pattern.lastIndex < text.length) {
+    const match = pattern.exec(text);
+    if (!match) throw new Error("Prüfe die Schreibweise. Erlaubt sind Zahlen, x und y, Rechenzeichen und Klammern.");
+    if (!allowY && match[1] === "y") throw new Error("Auf der rechten Seite darf x als Variable stehen.");
+    tokens.push(match[1]);
+  }
+  let cursor = 0;
+  const peek = () => tokens[cursor];
+
+  function sum() {
+    let value = product();
+    while (peek() === "+" || peek() === "-") {
+      const sign = tokens[cursor++] === "+" ? 1n : -1n;
+      value = addTerms(value, product(), sign);
+    }
+    return value;
+  }
+
+  function product() {
+    let value = signed();
+    while (["*", "/", "x", "y", "("].includes(peek())) {
+      const operator = peek();
+      if (operator === "*" || operator === "/") cursor++;
+      const right = signed();
+      if (operator === "/") {
+        if (!isConstant(right)) throw new Error("Teile durch eine Zahl, zum Beispiel x/2.");
+        value = scaleTerm(value, fraction(right[2].d, right[2].n));
+      } else {
+        value = multiplyTerms(value, right);
+      }
+    }
+    return value;
+  }
+
+  function signed() {
+    if (peek() === "+" || peek() === "-") {
+      const negative = tokens[cursor++] === "-";
+      const value = signed();
+      return negative ? scaleTerm(value, fraction(-1n)) : value;
+    }
+    const token = tokens[cursor++];
+    if (token === "x") return xTerm;
+    if (token === "y") return yTerm;
+    if (token === "(") {
+      const value = sum();
+      if (tokens[cursor++] !== ")") throw new Error("Ergänze die fehlende schließende Klammer.");
+      return value;
+    }
+    if (token && /^[\d.,]/.test(token)) {
+      const [whole, decimal = ""] = token.split(/[.,]/);
+      return [zero, zero, fraction(BigInt(whole + decimal), 10n ** BigInt(decimal.length))];
+    }
+    throw new Error("Hier fehlt eine Zahl, eine Variable oder ein Term in Klammern.");
+  }
+
+  const terms = [];
+  let sign = 1n;
+  while (true) {
+    while (peek() === "+" || peek() === "-") {
+      if (tokens[cursor++] === "-") sign = -sign;
+    }
+    const from = cursor;
+    const poly = product();
+    const fragment = tokens.slice(from, cursor);
+    checkSize(poly);
+    terms.push({
+      id: ++nextId,
+      sign,
+      poly,
+      core: showTokens(fragment),
+      variable: fragment.includes("x") || fragment.includes("y"),
+    });
+    if (peek() !== "+" && peek() !== "-") break;
+    sign = tokens[cursor++] === "-" ? -1n : 1n;
+  }
+  if (cursor !== tokens.length) throw new Error("Prüfe die Klammern und Rechenzeichen zwischen den Summanden.");
+  return terms;
+}
+
+function parseEquation(text, system = false) {
+  const parts = normalize(text).split("=").map((side) => side.trim());
+  if (parts.length !== 2 || parts.some((side) => side === "")) {
+    throw new Error(system ? "Gib die ganze Gleichung in der Form y = … oder 2y = … ein."
+      : "Gib genau ein Gleichheitszeichen und auf jeder Seite einen Term ein.");
+  }
+  const equation = [parseSide(parts[0]), parseSide(parts[1], !system)];
+  if (system && !sourceFactor(equation)) {
+    throw new Error("Schreibe links ein Vielfaches von y mit einem Faktor ungleich null, zum Beispiel 2y = x + 2.");
+  }
+  return equation;
+}
+
+function parseNumber(text) {
+  const sides = parseSide(normalize(text));
+  if (sides.some((term) => term.variable)) throw new Error("Gib eine Zahl ein, zum Beispiel −3, 0,5 oder 1/3.");
+  const poly = sides.reduce((total, term) => addTerms(total, term.poly, term.sign), blank);
+  checkSize(poly);
+  return poly[2];
+}
+
+function tileText(term) {
+  return (term.sign < 0n ? "−" : "") + term.core;
+}
+
+function sideText(terms) {
+  if (terms.length === 0) return "0";
+  return terms.map((term, index) => index === 0 ? tileText(term)
+    : (term.sign < 0n ? " − " : " + ") + term.core).join("");
+}
+
+function equationText(equation) {
+  return equation.map(sideText).join(" = ");
+}
+
+function sidePolynomial(terms) {
+  return terms.reduce((total, term) => addTerms(total, term.poly, term.sign), blank);
+}
+
+function sideValue(terms, values) {
+  return terms.reduce((total, term) => {
+    const quantity = add(add(multiply(term.poly[0], values[0]), multiply(term.poly[1], values[1])), term.poly[2]);
+    return add(total, quantity, term.sign);
+  }, zero);
+}
+
+function equationDifference([left, right]) {
+  return addTerms(sidePolynomial(right), sidePolynomial(left), -1n);
+}
+
+// Ein passender Punkt dient nur der Neigung nach einem freien Verschieben.
+// Im Unterricht wird die Lösung durch Umformen erarbeitet.
+function balancedPoint(equation) {
+  const [a, b, c] = equationDifference(equation);
+  if (b.n !== 0n) return [one, multiply(add(a, c), fraction(-b.d, b.n))];
+  if (a.n !== 0n) return [multiply(c, fraction(-a.d, a.n)), one];
+  return c.n === 0n ? [one, one] : null;
+}
+
+function balanceReferences(equations) {
+  if (equations.single) return { single: balancedPoint(equations.single) };
+  // Beide vollständigen Gleichungen berücksichtigen, auch bei 2y und 3y links.
+  const [a, b, c] = equationDifference(equations.i);
+  const [d, e, f] = equationDifference(equations.ii);
+  const determinant = add(multiply(a, e), multiply(d, b), -1n);
+  let common;
+  if (determinant.n !== 0n) {
+    const reciprocal = fraction(determinant.d, determinant.n);
+    common = [
+      multiply(add(multiply(b, f), multiply(e, c), -1n), reciprocal),
+      multiply(add(multiply(c, d), multiply(f, a), -1n), reciprocal),
+    ];
+  } else {
+    common = balancedPoint(equations.i);
+    if (!common || add(sideValue(equations.ii[1], common), sideValue(equations.ii[0], common), -1n).n !== 0n) {
+      return { i: balancedPoint(equations.i), ii: balancedPoint(equations.ii), common: null };
+    }
+  }
+  return { i: common, ii: common, common };
+}
+
+function sourceFactor(equation) {
+  const [x, y, constant] = sidePolynomial(equation[0]);
+  return x.n === 0n && constant.n === 0n && y.n !== 0n &&
+    equation[1].every((term) => term.poly[1].n === 0n) ? y : null;
+}
+
+function matchingLeftSides(state) {
+  const factors = sourceKeys.map((key) => sourceFactor(state.equations[key]));
+  return factors.every(Boolean) && add(factors[0], factors[1], -1n).n === 0n;
+}
+
+function comparisonMismatch(state) {
+  const factors = sourceKeys.map((key, index) => state.inserted[index] ? sourceFactor(state.equations[key]) : one);
+  return factors.every(Boolean) ? add(factors[1], factors[0], -1n) : zero;
+}
+
+function monomials(poly) {
+  const vars = ["x", "y", ""];
+  return poly.flatMap((value, index) => {
+    if (value.n === 0n) return [];
+    const sign = value.n < 0n ? -1n : 1n;
+    const magnitude = { n: value.n * sign, d: value.d };
+    const variable = vars[index];
+    const coefficient = magnitude.d === 1n ? String(magnitude.n) : magnitude.n + "/" + magnitude.d;
+    const showCoefficient = !variable || magnitude.n !== magnitude.d;
+    const symbol = variable && magnitude.d !== 1n ? "·" + variable : variable;
+    return [{
+      sign,
+      poly: blank.map((empty, position) => position === index ? magnitude : empty),
+      core: (showCoefficient ? coefficient : "") + symbol,
+      variable: Boolean(variable),
+    }];
+  });
+}
+
+function asTile(poly, id) {
+  const leading = poly.find((value) => value.n !== 0n);
+  if (!leading) return { id, sign: 1n, poly: blank, core: "0", variable: false };
+  const sign = leading.n < 0n ? -1n : 1n;
+  const oriented = sign === 1n ? poly : scaleTerm(poly, fraction(-1n));
+  const chunks = monomials(oriented);
+  if (chunks.length === 1) return { ...chunks[0], id, sign };
+  return { id, sign, poly: oriented, core: "(" + sideText(chunks) + ")", variable: true };
+}
+
+function divideEquation(equation, divisor) {
+  if (divisor.n === 0n) throw new Error("Wähle eine Zahl ungleich null.");
+  if (divisor.n === divisor.d) return equation;
+  const reciprocal = fraction(divisor.d, divisor.n);
+  // Ein Summand bleibt ein Baustein. Das Zusammenfassen ist ein eigener Schritt.
+  return equation.map((side) => side.map((term) => {
+    const factor = { n: reciprocal.n * term.sign, d: reciprocal.d };
+    return asTile(scaleTerm(term.poly, factor), term.id);
+  }));
+}
+
+function collectEquation(equation) {
+  const sides = equation.map((side) => {
+    const result = monomials(sidePolynomial(side));
+    const unchanged = result.length === side.length && result.every((term, index) =>
+      term.sign === side[index].sign && term.core === side[index].core);
+    return unchanged ? side : result.map((term) => ({ ...term, id: ++nextId }));
+  });
+  return sides.every((side, index) => side === equation[index]) ? equation : sides;
+}
+
+function angleFor(difference, halfArm, swing) {
+  if (difference.n === 0n || halfArm <= 0) return 0;
+  const abs = difference.n < 0n ? -difference.n : difference.n;
+  const maximum = Math.min(Math.PI / 12, Math.asin(Math.min(.99, swing / halfArm)));
+  const strength = Number(1000n * abs / (abs + 4n * difference.d)) / 1000;
+  // Kleine, aber exakte Unterschiede bleiben erkennbar.
+  return (difference.n > 0n ? 1 : -1) * maximum * (.27 + .73 * strength);
+}
+
+const identity = parseEquation("y = y");
+const sourceKeys = ["i", "ii"];
+const sourceTags = ["(I)", "(II)"];
+const presets = {
+  single: {
+    start: { input: ["y = 3x + 2"] },
+    simple: { input: ["5 = x + 3"] },
+    identity: { input: ["y = y"] },
+    solve: { input: ["3x + 2 = x + 8"] },
+    half: { input: ["2x = 6"] },
+    third: { input: ["3x = 12"] },
+    negative: { input: ["2x − 3 = x − 6"] },
+  },
+  system: {
+    third: { input: ["y = 4x + 1", "y = x + 7"] },
+    positive: { input: ["y = x + 2", "y = 2x + 1"] },
+    half: { input: ["y = 3x + 2", "y = x + 8"] },
+    coefficients: { input: ["2y = 4x + 2", "3y = 3x + 9"] },
+    negative: { input: ["y = 2x − 3", "y = x − 6"] },
+    parallel: { input: ["y = x + 2", "y = x + 5"] },
+  },
+};
+
+function freshSnapshot(equations, basis = equations) {
+  return { equations, basis, inserted: [false, false], comparisonEdited: false, work: null };
+}
+
+function comparisonStart(state) {
+  return freshSnapshot({ ...state.equations, comparison: identity }, { ...state.basis, comparison: identity });
+}
+
+function equivalentToBasis(state, key) {
+  if (state.equations[key] === state.basis[key]) return true;
+  const before = equationDifference(state.basis[key]);
+  const after = equationDifference(state.equations[key]);
+  const axis = before.findIndex((value) => value.n !== 0n);
+  if (axis < 0) return after.every((value) => value.n === 0n);
+  if (after[axis].n === 0n) return false;
+  return before.every((value, index) =>
+    add(multiply(value, after[axis]), multiply(after[index], before[axis]), -1n).n === 0n);
+}
+
+function replaceable(state, index) {
+  return equivalentToBasis(state, sourceKeys[index]) &&
+    Boolean(sourceFactor(state.equations[sourceKeys[index]]));
+}
+
+function moveSummand(state, key, from, id, transpose) {
+  const current = state.equations[key];
+  const term = current[from].find((item) => item.id === id);
+  if (!term) return state;
+  const moved = transpose ? { ...term, sign: -term.sign } : term;
+  const equation = [...current];
+  equation[from] = current[from].filter((item) => item.id !== id);
+  equation[1 - from] = [...current[1 - from], moved];
+  return changeEquation(state, key, equation);
+}
+
+function changeEquation(state, key, equation) {
+  if (state.equations[key] === equation) return state;
+  const next = { ...state, equations: { ...state.equations, [key]: equation } };
+  if (key === "comparison") next.comparisonEdited = true;
+  if (sourceKeys.includes(key) && state.inserted.some(Boolean)) return comparisonStart(next);
+  return next;
+}
+
+function insertRightSide(state, index) {
+  if (state.comparisonEdited || state.inserted[index] || !replaceable(state, index)) return state;
+  const equation = [...state.equations.comparison];
+  equation[index] = state.equations[sourceKeys[index]][1].map((term) => ({ ...term, id: ++nextId }));
+  const inserted = [...state.inserted];
+  inserted[index] = true;
+  return {
+    ...state, inserted,
+    equations: { ...state.equations, comparison: equation },
+    basis: { ...state.basis, comparison: equation },
+  };
+}
+
+function substitutionFor(state) {
+  if (!state.inserted.every(Boolean) || !matchingLeftSides(state) || !equivalentToBasis(state, "comparison") ||
+    !sourceKeys.every((_, index) => replaceable(state, index))) return null;
+  const equation = state.equations.comparison;
+  const xSide = equation.findIndex((side) => side.length === 1 && side[0].sign === 1n && side[0].core === "x");
+  if (xSide < 0 || !equation[1 - xSide].every((term) => isConstant(term.poly))) return null;
+  const x = sideValue(equation[1 - xSide], [zero, zero]);
+  const outputs = sourceKeys.map((key) => {
+    const factor = sourceFactor(state.equations[key]);
+    return multiply(sideValue(state.equations[key][1], [x, zero]), fraction(factor.d, factor.n));
+  });
+  return { x, outputs, matches: add(outputs[0], outputs[1], -1n).n === 0n };
+}
+
+function constantOutcome(state) {
+  if (!matchingLeftSides(state) || !equivalentToBasis(state, "comparison") || !state.inserted.every(Boolean)) return "";
+  const equation = state.equations.comparison;
+  if (!equation.every((side) => side.every((term) => isConstant(term.poly)))) return "";
+  const [left, right] = equation.map((side) => sideValue(side, [zero, zero]));
+  return add(left, right, -1n).n === 0n
+    ? "Die Gleichung stimmt für jedes x. Zu jedem x gehört ein gemeinsamer y-Wert."
+    : "Es bleibt eine falsche Zahlengleichung. Das System hat keine Lösung.";
+}
+
+function nextAlgebraStep(equation) {
+  const polynomials = equation.map(sidePolynomial);
+  const axes = [0, 1].filter((axis) => equation.some((side) =>
+    side.some((term) => term.poly[axis].n !== 0n)));
+  if (axes.length !== 1) return "";
+  const axis = axes[0];
+  const withVariable = polynomials.findIndex((poly) => poly[axis].n !== 0n);
+  if (withVariable < 0) return "Fasse die Terme auf beiden Schalen zusammen.";
+  const coefficient = polynomials[withVariable][axis];
+  const variable = axis === 0 ? "x" : "y";
+  if (polynomials[1 - withVariable][axis].n !== 0n || polynomials[withVariable][2].n !== 0n) {
+    return "Sammle die " + variable + "-Terme auf einer Schale und die Zahlen auf der anderen.";
+  }
+  const reducible = equation.some((side, index) => {
+    const canonical = monomials(polynomials[index]);
+    return side.length !== canonical.length || side.some((term, termIndex) =>
+      term.sign !== canonical[termIndex].sign || term.core !== canonical[termIndex].core);
+  });
+  if (reducible) return "Fasse die Terme auf beiden Schalen zusammen.";
+  return coefficient.n === coefficient.d ? "" : "Teile beide Seiten durch " + showFraction(coefficient) + ".";
+}
+const available = {
+  single: {
+    keys: ["single"],
+    fields: [byId("single-input")],
+    preset: byId("single-preset"),
+    edit: byId("single-edit"),
+    entry: byId("single-entry"),
+  },
+  system: {
+    keys: sourceKeys,
+    fields: [byId("system-first"), byId("system-second")],
+    preset: byId("system-preset"),
+    edit: byId("system-edit"),
+    entry: byId("system-entry"),
+  },
+};
+
+for (const [name, mode] of Object.entries(available)) {
+  const chosen = presets[name][mode.preset.value];
+  const equations = Object.fromEntries(mode.keys.map((key, index) =>
+    [key, parseEquation(chosen.input[index], name === "system")]));
+  mode.fields.forEach((field, index) => { field.value = chosen.input[index]; });
+  if (name === "system") equations.comparison = identity;
+  mode.start = freshSnapshot(equations);
+  mode.current = mode.start;
+  mode.references = balanceReferences(equations);
+  mode.transpose = true;
+  mode.editing = false;
+  mode.history = [];
+  mode.message = "";
+}
+
+const controlArea = byId("controls-template").content.firstElementChild.cloneNode(true);
+byId("single-controls").append(controlArea);
+const moveRadios = [...controlArea.querySelector(".move-choice").querySelectorAll("input")];
+
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+let activeMode = "single";
+let drag = null;
+let flight = null;
+let swallowClick = null;
+let divisionPreview = null;
+let presenting = false;
+let ownsFullscreen = false;
+let changingPresentation = false;
+
+const boards = {
+  single: makeBoard("single", "Gleichungswaage", "single-board"),
+  i: makeBoard("i", "Gleichung (I)", "source-boards", 0),
+  ii: makeBoard("ii", "Gleichung (II)", "source-boards", 1),
+  comparison: makeBoard("comparison", "Vergleichswaage", "result-board"),
+};
+const scenes = new Map(Object.values(boards).map((board) => [board.scene, board]));
+const stepButton = byId("step");
+const substituteButton = byId("substitute");
+const undoButton = byId("undo");
+const restoreButton = byId("restore");
+const replayButton = byId("replay");
+
+function makeBoard(key, heading, mount, origin = null) {
+  const card = byId("board-template").content.firstElementChild.cloneNode(true);
+  const interior = card.querySelector(".board-interior");
+  const formula = card.querySelector(".equation");
+  const title = card.querySelector("h2");
+  title.id = "heading-" + key;
+  title.textContent = heading;
+  title.setAttribute("tabindex", "-1");
+  card.setAttribute("aria-labelledby", title.id);
+  card.dataset.board = key;
+  const group = card.querySelector(".send-group");
+  const scene = card.querySelector(".scene");
+  const pans = [0, 1].map((side) => {
+    const pan = byId("pan-template").content.firstElementChild.cloneNode(true);
+    pan.setAttribute("role", "group");
+    pan.setAttribute("aria-label", side === 0 ? "Linke Schale" : "Rechte Schale");
+    scene.querySelector(".pans").append(pan);
+    return { bowl: pan, tiles: pan.querySelector(".tiles") };
+  });
+  if (origin === null) {
+    interior.prepend(card.querySelector(".equation-stack"));
+    const isResult = key === "comparison";
+    card.classList.add(isResult ? "result-card" : "single-card");
+    if (isResult) {
+      card.querySelector(".result-count").hidden = false;
+      interior.classList.add("result-interior");
+      card.append(byId("result-footer-template").content.cloneNode(true));
+    }
+  } else {
+    card.classList.add("source-card");
+    card.querySelector(".origin").hidden = false;
+    card.querySelector(".origin").textContent = sourceTags[origin];
+    group.hidden = false;
+    group.dataset.transfer = String(origin);
+    group.title = "Ganze rechte Seite auf die Vergleichswaage ziehen oder per Klick übertragen";
+    group.setAttribute("aria-label", "Ganze rechte Seite aus " + sourceTags[origin] + " übertragen");
+  }
+
+  byId(mount).append(card);
+  const board = {
+    key, card, pans, group, formula, scene,
+    balanceStatus: card.querySelector(".balance-status"),
+    workLine: card.querySelector(".work-line"),
+    workBefore: card.querySelector(".work-before"),
+    workOperator: card.querySelector(".work-operator"),
+    liveOperator: card.querySelector(".live-operator"),
+    menu: card.querySelector(".operation-menu"),
+    divisor: card.querySelector(".divisor"),
+    divisionError: card.querySelector(".division-error"),
+    divisionStep: card.querySelector(".division-step"),
+    keepPart: card.querySelector(".confirm-division"),
+    difference: zero,
+  };
+  board.menuButton = board.menu.querySelector("summary");
+  setupTransformations(board, heading);
+  card.addEventListener("click", clickInBoard);
+  card.addEventListener("pointerdown", startDrag);
+  card.addEventListener("pointermove", followDrag);
+  card.addEventListener("pointerup", finishDrag);
+  card.addEventListener("pointercancel", loseDrag);
+  card.addEventListener("lostpointercapture", loseDrag);
+  return board;
+}
+
+function syncControls() {
+  const mode = available[activeMode];
+  for (const input of moveRadios) input.checked = (input.value === "transpose") === mode.transpose;
+  mode.entry.hidden = !mode.editing;
+  mode.edit.setAttribute("aria-expanded", String(mode.editing));
+  mode.edit.textContent = mode.editing ? "Eingabe einklappen" : "Eigene Eingabe";
+}
+
+controlArea.querySelector(".move-choice").addEventListener("change", (event) => {
+  available[activeMode].transpose = event.target.value === "transpose";
+  available[activeMode].message = "";
+  updateTip();
+  for (const board of Object.values(boards)) {
+    for (const tile of board.scene.querySelectorAll("[data-term]")) describeTile(tile);
+  }
+  updateResultControls();
+});
+
+function refreshBalance(board, equation, reference, mismatch = zero) {
+  const [left, right] = equation;
+  const difference = equationDifference(equation);
+  const constantDifference = isConstant(difference);
+  board.difference = reference ? add(sideValue(right, reference), sideValue(left, reference), -1n)
+    : constantDifference ? difference[2] : zero;
+  // Auch bei zufällig gleichen Zahlenwerten (etwa y = 0) bleibt die
+  // fehlende Voraussetzung für das Gleichsetzen sichtbar.
+  if (board.difference.n === 0n && mismatch.n !== 0n) board.difference = mismatch;
+  const contradiction = !reference && constantDifference && difference[2].n !== 0n && mismatch.n === 0n;
+  board.scene.classList.toggle("no-balance", contradiction);
+  const status = mismatch.n !== 0n ? "Linke Seiten stimmen nicht überein." : contradiction ? "Kein Gleichgewicht möglich." :
+    board.difference.n !== 0n ? "Aus dem Gleichgewicht" : "";
+  if (board.balanceStatus.textContent !== status) board.balanceStatus.textContent = status;
+  board.balanceStatus.hidden = !status;
+  tilt(board);
+}
+
+function tilt(board) {
+  const halfArm = board.scene.clientWidth / 4;
+  if (!halfArm) return;
+  const swing = Math.max(9, Math.min(48, parseFloat(getComputedStyle(board.scene).paddingTop) - 1));
+  const theta = angleFor(board.difference, halfArm, swing);
+  board.scene.style.setProperty("--angle", theta + "rad");
+  const dy = halfArm * Math.sin(theta);
+  const dx = halfArm * (1 - Math.cos(theta));
+  board.pans.forEach(({ bowl }, side) => {
+    bowl.style.setProperty("--offset-y", (side === 0 ? -dy : dy) + "px");
+    bowl.style.setProperty("--offset-x", (side === 0 ? dx : -dx) + "px");
+  });
+}
+
+function refreshBalances() {
+  const { current, references } = available[activeMode];
+  const comparisonReference = references.common ?? (current.inserted.every(Boolean) ? null :
+    references[current.inserted[1] ? "ii" : "i"]);
+  for (const [key, equation] of Object.entries(current.equations)) {
+    refreshBalance(boards[key], equation, key === "comparison" ? comparisonReference : references[key],
+      key === "comparison" ? comparisonMismatch(current) : zero);
+  }
+}
+
+if (typeof ResizeObserver === "function") {
+  const observer = new ResizeObserver((entries) => entries.forEach(({ target }) => tilt(scenes.get(target))));
+  scenes.forEach((_, scene) => observer.observe(scene));
+} else {
+  window.addEventListener("resize", refreshBalances);
+}
+
+function describeTile(tile) {
+  const destination = tile.dataset.side === "0" ? "rechts" : "links";
+  const action = available[activeMode].transpose ? " mit Vorzeichenwechsel nach " : " nach ";
+  tile.setAttribute("aria-label", tile.textContent + action + destination + " bewegen");
+  tile.title = "Nach " + destination + " ziehen oder anklicken";
+}
+
+function renderBoard(board, equation, work) {
+  board.formula.textContent = equationText(equation);
+  const preview = divisionPreview?.key === board.key ? divisionPreview : null;
+  const last = !preview && work?.key === board.key ? work : null;
+  board.workLine.hidden = !last;
+  board.workBefore.textContent = last?.before || "";
+  board.workOperator.textContent = last?.operator || "";
+  board.liveOperator.hidden = !preview;
+  board.liveOperator.textContent = preview ? divisionMark(preview.divisor) : "";
+  board.divisionStep.hidden = !preview;
+  if (preview) {
+    const label = preview.parts
+      ? preview.parts + " gleich große Teile je Schale. Ein Teil pro Seite ist markiert."
+      : "Teile auf beiden Seiten jeden Summanden durch " + showFraction(preview.divisor) + ".";
+    board.divisionStep.querySelector(".division-stage-status").textContent = label;
+    board.keepPart.textContent = preview.parts ? "Je einen Teil behalten" : "Division anwenden";
+  }
+  board.pans.forEach(({ tiles }, side) => {
+    tiles.classList.toggle("portion-layout", Boolean(preview?.parts));
+    if (preview?.parts) {
+      tiles.replaceChildren(drawPortions(preview, side));
+      return;
+    }
+    const elements = equation[side].map((term) => {
+      const tile = document.createElement(preview ? "span" : "button");
+      tile.className = "tile";
+      tile.textContent = tileText(term);
+      tile.classList.toggle("variable", term.variable);
+      tile.classList.toggle("minus", term.sign < 0n);
+      tile.classList.toggle("long", tile.textContent.length > 8);
+      if (!preview) {
+        tile.type = "button";
+        tile.dataset.term = String(term.id);
+        tile.dataset.side = String(side);
+        describeTile(tile);
+      }
+      return tile;
+    });
+    if (!elements.length) {
+      const empty = document.createElement("span");
+      empty.className = "empty-pan";
+      empty.setAttribute("aria-label", "Leere Schale");
+      empty.textContent = "0";
+      elements.push(empty);
+    }
+    tiles.replaceChildren(...elements);
+  });
+}
+
+function drawPortions(preview, side) {
+  const row = document.createElement("div");
+  row.className = "division-portions";
+  row.style.setProperty("--parts", String(preview.parts));
+  const text = sideText(preview.quotient[side]);
+  for (let index = 0; index < preview.parts; index++) {
+    const portion = document.createElement("div");
+    portion.className = index === 0 ? "portion keep" : "portion";
+    const share = document.createElement("span");
+    share.className = "portion-share";
+    share.textContent = "Teil " + (index + 1);
+    const value = document.createElement("span");
+    value.className = "portion-value";
+    value.textContent = text;
+    portion.append(share, value);
+    row.append(portion);
+  }
+  return row;
+}
+
+function toggleButton(button, allowed) {
+  button.setAttribute("aria-disabled", String(!allowed));
+}
+
+function canTransfer(index) {
+  const state = available.system.current;
+  return !flight && !divisionPreview && !state.comparisonEdited && !state.inserted[index] && replaceable(state, index);
+}
+
+function updateResultControls() {
+  const mode = available.system;
+  const state = mode.current;
+  const count = state.inserted.filter(Boolean).length;
+  const index = state.inserted.indexOf(false);
+  const substitution = substitutionFor(state);
+  const outcome = constantOutcome(state);
+  boards.comparison.card.querySelector(".result-count").textContent = count + " von 2 eingesetzt";
+  sourceKeys.forEach((key, source) => toggleButton(boards[key].group, canTransfer(source)));
+  toggleButton(stepButton, index !== -1 && canTransfer(index));
+  toggleButton(replayButton, count > 0 || state.comparisonEdited || Boolean(flight));
+  substituteButton.hidden = !substitution;
+  toggleButton(substituteButton, Boolean(substitution) && !divisionPreview && !flight);
+  stepButton.hidden = index === -1;
+
+  let status;
+  if (mode.substitution?.state === state) {
+    status = mode.substitution.text;
+  } else if (count > 0 && comparisonMismatch(state).n !== 0n) {
+    const leftSides = sourceKeys.map((key, source) => state.inserted[source]
+      ? sideText(state.equations[key][0]) + " aus " + sourceTags[source] : "y");
+    status = "Hier werden die rechten Seiten für " + leftSides[0] + " und " + leftSides[1] +
+      " verglichen. Forme die Ausgangsgleichungen so um, dass links derselbe Term steht, zum Beispiel jeweils y.";
+  } else if (substitution) {
+    status = "Setze den gefundenen x-Wert in (I) und (II) ein.";
+  } else if (!equivalentToBasis(state, "comparison")) {
+    status = "Gehe mit „Rückgängig“ zur letzten gleichwertigen Gleichung zurück.";
+  } else if (outcome) {
+    status = outcome;
+  } else if (index === -1) {
+    status = state.comparisonEdited
+      ? nextAlgebraStep(state.equations.comparison) || "Prüfe die entstandene Gleichung."
+      : "Beide rechten Seiten haben denselben Wert, weil die linken Seiten übereinstimmen und beide Ausgangsgleichungen gelten.";
+  } else if (state.comparisonEdited) {
+    status = "Mit „Neu zeigen“ kehrst du für die Übertragung zu y = y zurück.";
+  } else if (!equivalentToBasis(state, sourceKeys[index])) {
+    status = "Mache das Verschieben in " + sourceTags[index] + " rückgängig, bevor du den Term überträgst.";
+  } else if (!replaceable(state, index)) {
+    status = "Stelle ein Vielfaches von y allein auf die linke Schale in " + sourceTags[index] + ".";
+  } else {
+    const factor = sourceFactor(state.equations[sourceKeys[index]]);
+    status = factor.n !== factor.d
+      ? "Übertrage die rechte Seite aus " + sourceTags[index] + ". Sie steht für " +
+        sideText(state.equations[sourceKeys[index]][0]) + ". Prüfe, ob die linken Seiten übereinstimmen, oder teile zuerst beide Seiten durch " + showFraction(factor) + "."
+      : (count === 0 ? (matchingLeftSides(state) ? "Beide y stehen für denselben Wert. "
+        : "Zum Gleichsetzen müssen die linken Seiten übereinstimmen. ") : "") +
+        "Ersetze " + (index === 0 ? "links" : "rechts") + " y durch die rechte Seite aus " + sourceTags[index] + ".";
+  }
+  if (byId("result-status").textContent !== status) byId("result-status").textContent = status;
+  stepButton.textContent = index === -1 ? "Beide Terme eingesetzt" : sourceTags[index] + " übertragen";
+}
+
+function updateTip() {
+  const mode = available[activeMode];
+  const guide = activeMode === "single" && mode.preset.value !== "identity" && !divisionPreview
+    ? nextAlgebraStep(mode.current.equations.single) : "";
+  const hint = mode.transpose
+    ? "Beim Seitenwechsel mit Vorzeichenwechsel bleibt das Gleichgewicht erhalten."
+    : "Beim Verschieben behält der Summand sein Vorzeichen. Die Waage kann aus dem Gleichgewicht geraten.";
+  const content = mode.message || (!mode.transpose ? hint : guide || (!mode.current.work && !divisionPreview ? hint : ""));
+  const tip = byId("tip");
+  if (tip.textContent !== content) tip.textContent = content;
+  tip.hidden = !content;
+  toggleButton(undoButton, mode.history.length > 0);
+  toggleButton(restoreButton, hasChanges(mode));
+}
+
+function hasChanges(mode) {
+  return mode.current !== mode.start || !mode.transpose;
+}
+
+function render() {
+  const { current } = available[activeMode];
+  syncControls();
+  for (const [key, equation] of Object.entries(current.equations)) renderBoard(boards[key], equation, current.work);
+  refreshBalances();
+  updateTip();
+  updateResultControls();
+}
+
+function commit(next, message = "", work = null) {
+  const mode = available[activeMode];
+  if (next === mode.current) return;
+  mode.history.push(mode.current);
+  mode.current = { ...next, work };
+  mode.substitution = null;
+  mode.message = message;
+  render();
+}
+
+function recordWork(key, equation, operator) {
+  return { key, before: equationText(equation), operator };
+}
+
+function divisionMark(divisor) {
+  const value = showFraction(divisor);
+  return "| : " + (divisor.n < 0n || divisor.d !== 1n ? "(" + value + ")" : value);
+}
+
+function clearFieldErrors(mode, error) {
+  for (const field of mode.fields) field.removeAttribute("aria-invalid");
+  error.hidden = true;
+}
+
+function loadEquations(name, value, chosen) {
+  const mode = available[name];
+  const error = byId(name + "-error");
+  clearFieldErrors(mode, error);
+  const equations = {};
+  for (const [index, field] of mode.fields.entries()) {
+    try {
+      equations[mode.keys[index]] = parseEquation(value[index], name === "system");
+    } catch (problem) {
+      error.textContent = problem.message;
+      error.hidden = false;
+      field.setAttribute("aria-invalid", "true");
+      field.focus();
+      return;
+    }
+  }
+  cancelWork();
+  if (name === "system") equations.comparison = identity;
+  mode.start = freshSnapshot(equations);
+  mode.current = mode.start;
+  mode.references = balanceReferences(equations);
+  mode.transpose = true;
+  mode.history = [];
+  mode.message = "";
+  mode.substitution = null;
+  if (chosen) {
+    mode.fields.forEach((field, index) => { field.value = value[index]; });
+  } else {
+    mode.preset.value = "";
+  }
+  mode.editing = false;
+  render();
+  if (!chosen) mode.edit.focus({ preventScroll: true });
+}
+
+for (const [name, mode] of Object.entries(available)) {
+  const error = byId(name + "-error");
+  byId(name + "-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    loadEquations(name, mode.fields.map((field) => field.value));
+  });
+  mode.fields.forEach((field) => field.addEventListener("input", () => clearFieldErrors(mode, error)));
+  mode.edit.addEventListener("click", () => {
+    mode.editing = !mode.editing;
+    syncControls();
+    if (mode.editing) mode.fields[0].focus();
+  });
+  mode.preset.addEventListener("change", () => {
+    const chosen = presets[name][mode.preset.value];
+    if (chosen) loadEquations(name, chosen.input, chosen);
+  });
+}
+
+undoButton.addEventListener("click", () => {
+  const mode = available[activeMode];
+  if (!mode.history.length) return;
+  cancelWork();
+  mode.current = mode.history.pop();
+  mode.substitution = null;
+  mode.message = "Letzte Änderung rückgängig gemacht.";
+  render();
+});
+
+restoreButton.addEventListener("click", () => {
+  const mode = available[activeMode];
+  if (!hasChanges(mode)) return;
+  cancelWork();
+  if (mode.current !== mode.start) mode.history.push(mode.current);
+  mode.transpose = true;
+  mode.current = mode.start;
+  mode.substitution = null;
+  mode.message = "Waagen zurückgesetzt.";
+  render();
+});
+
+replayButton.addEventListener("click", () => {
+  if (replayButton.getAttribute("aria-disabled") === "true") return;
+  cancelWork();
+  commit(comparisonStart(available.system.current));
+});
+
+stepButton.addEventListener("click", () => {
+  const index = available.system.current.inserted.indexOf(false);
+  if (index >= 0 && !drag) performOperation(makeGroupOperation(index));
+});
+
+substituteButton.addEventListener("click", () => {
+  if (activeMode !== "system" || flight || divisionPreview) return;
+  const mode = available.system;
+  const solution = substitutionFor(mode.current);
+  if (!solution) return;
+  const [first, second] = solution.outputs.map(showFraction);
+  const x = showFraction(solution.x);
+  mode.substitution = {
+    state: mode.current,
+    text: solution.matches
+      ? "Einsetzen von x = " + x + " ergibt in (I) und (II) y = " + first + ". Die Lösung ist (" + x + " | " + first + ")."
+      : "Bei x = " + x + " ergibt (I) y = " + first + " und (II) y = " + second + ". Dieses x erfüllt das System nicht.",
+  };
+  updateResultControls();
+});
+
+function clearDivisionError(board) {
+  board.divisionError.hidden = true;
+  board.divisor.removeAttribute("aria-invalid");
+}
+
+function closeMenu(board) {
+  board.menu.open = false;
+  clearDivisionError(board);
+}
+
+function setupTransformations(board, heading) {
+  const { card, menu, menuButton, divisor, divisionError } = board;
+  menuButton.setAttribute("aria-label", "Umformen · " + heading);
+  divisor.id = "divisor-" + board.key;
+  divisionError.id = "division-error-" + board.key;
+  divisor.setAttribute("aria-errormessage", divisionError.id);
+  menu.querySelector(".divisor-label").setAttribute("for", divisor.id);
+  menu.querySelector(".collect").addEventListener("click", () => collectOn(board));
+  for (const shortcut of menu.querySelectorAll(".simple-divide")) {
+    shortcut.addEventListener("click", () => prepareDivision(board, fraction(BigInt(shortcut.dataset.divisor))));
+  }
+  menu.querySelector(".division-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    try {
+      prepareDivision(board, parseNumber(divisor.value));
+    } catch (error) {
+      divisionError.textContent = error.message;
+      divisionError.hidden = false;
+      divisor.setAttribute("aria-invalid", "true");
+      divisor.focus();
+    }
+  });
+  divisor.addEventListener("input", () => clearDivisionError(board));
+  board.keepPart.addEventListener("click", () => confirmDivision(board));
+  card.querySelector(".cancel-division").addEventListener("click", () => dropDivision(board));
+}
+
+function transformOn(board, equation, operator, fallback = "") {
+  const mode = available[activeMode];
+  const state = mode.current;
+  const next = changeEquation(state, board.key, equation);
+  const reset = state.inserted.some(Boolean) && !next.inserted.some(Boolean);
+  if (next === state) {
+    mode.message = fallback;
+    render();
+  } else {
+    const work = recordWork(board.key, state.equations[board.key], operator);
+    commit(next, reset ? "Die Vergleichswaage beginnt wieder bei y = y." : "", work);
+  }
+}
+
+function collectOn(board) {
+  const equation = available[activeMode].current.equations[board.key];
+  if (!equation) return;
+  const collected = collectEquation(equation);
+  cancelWork();
+  closeMenu(board);
+  transformOn(board, collected, "| zusammenfassen", "Die Terme auf dieser Waage sind schon zusammengefasst.");
+  board.menuButton.focus({ preventScroll: true });
+}
+
+function prepareDivision(board, divisor) {
+  const equation = available[activeMode].current.equations[board.key];
+  if (!equation) return;
+  const quotient = divideEquation(equation, divisor);
+  cancelWork();
+  closeMenu(board);
+  if (quotient === equation) {
+    transformOn(board, equation, "", "Teilen durch 1 ändert die Gleichung nicht.");
+    board.menuButton.focus({ preventScroll: true });
+    return;
+  }
+  const parts = divisor.d === 1n && divisor.n >= 2n && divisor.n <= 6n ? Number(divisor.n) : null;
+  divisionPreview = { key: board.key, divisor, quotient, parts };
+  render();
+  board.keepPart.focus();
+}
+
+function confirmDivision(board) {
+  const pending = divisionPreview;
+  if (pending?.key !== board.key) return;
+  divisionPreview = null;
+  transformOn(board, pending.quotient, divisionMark(pending.divisor));
+  board.menuButton.focus({ preventScroll: true });
+}
+
+function dropDivision(board) {
+  if (divisionPreview?.key !== board.key) return;
+  divisionPreview = null;
+  render();
+  board.menuButton.focus({ preventScroll: true });
+}
+
+function makeGroupOperation(index) {
+  const source = boards[sourceKeys[index]];
+  return {
+    group: true,
+    index,
+    handle: source.group,
+    origin: source.pans[1].tiles,
+    destination: boards.comparison.pans[index].bowl,
+  };
+}
+
+function operationFor(target) {
+  const handle = target?.closest?.("button[data-term], button[data-transfer]");
+  if (!handle || handle.hidden) return null;
+  if (handle.dataset.transfer !== undefined) return makeGroupOperation(Number(handle.dataset.transfer));
+  const key = handle.closest("[data-board]").dataset.board;
+  const side = Number(handle.dataset.side);
+  return { key, side, id: Number(handle.dataset.term), handle, origin: handle, destination: boards[key].pans[1 - side].bowl };
+}
+
+function allowed(operation) {
+  if (!operation || flight || divisionPreview || operation.handle.getAttribute("aria-disabled") === "true") return false;
+  if (operation.group) return activeMode === "system" && canTransfer(operation.index);
+  return Boolean(available[activeMode].current.equations[operation.key]?.[operation.side]
+    .some((item) => item.id === operation.id));
+}
+
+function nextSnapshot(operation) {
+  const { current, transpose } = available[activeMode];
+  if (operation.group) {
+    return {
+      next: insertRightSide(current, operation.index),
+      message: "",
+      work: recordWork("comparison", current.equations.comparison, sourceTags[operation.index] + " einsetzen"),
+    };
+  }
+  const { key, side, id } = operation;
+  const term = current.equations[key][side].find((item) => item.id === id);
+  const next = moveSummand(current, key, side, id, transpose);
+  const sign = term.sign === 1n ? "−" : "+";
+  const resetComparison = sourceKeys.includes(key) && current.inserted.some(Boolean);
+  const message = [
+    !transpose && !equivalentToBasis(next, key) ? "Das Verschieben hat die Gleichung verändert." : "",
+    resetComparison ? "Die Vergleichswaage beginnt wieder bei y = y." : "",
+  ].filter(Boolean).join(" ");
+  const operator = transpose ? "| " + sign + term.core : "ohne Vorzeichenwechsel verschoben";
+  return { next, message, work: recordWork(key, current.equations[key], operator) };
+}
+
+function position(element, x, y) {
+  element.style.left = x + "px";
+  element.style.top = y + "px";
+}
+
+function ghostFor(operation) {
+  const rect = operation.origin.getBoundingClientRect();
+  const ghost = document.createElement("div");
+  ghost.className = "flight";
+  ghost.inert = true;
+  ghost.setAttribute("aria-hidden", "true");
+  if (operation.key === "single") ghost.classList.add("ghost-large");
+  ghost.style.width = rect.width + "px";
+  ghost.style.setProperty("--tile-height", getComputedStyle(operation.origin).getPropertyValue("--tile-height"));
+  position(ghost, rect.left, rect.top);
+  ghost.append(operation.origin.cloneNode(true));
+  document.body.append(ghost);
+  operation.origin.classList.add("moving-from");
+  return ghost;
+}
+
+function visible(rect) {
+  return rect.top >= 0 && rect.bottom <= window.innerHeight;
+}
+
+function discard(operation, ghost) {
+  ghost?.remove();
+  operation.origin.classList.remove("moving-from");
+}
+
+async function performOperation(operation, ghost = null, focusMoved = false) {
+  if (!allowed(operation)) {
+    if (ghost) discard(operation, ghost);
+    return;
+  }
+  const { next, message, work } = nextSnapshot(operation);
+  const target = operation.destination.querySelector(".shelf");
+  if (!ghost && !visible(target.getBoundingClientRect())) target.scrollIntoView({ block: "nearest" });
+  function apply() {
+    discard(operation, ghost);
+    commit(next, message, work);
+    if (focusMoved && !operation.group) {
+      boards[operation.key].scene.querySelector('[data-term="' + operation.id + '"]')?.focus({ preventScroll: true });
+    }
+  }
+  if (reducedMotion.matches || typeof target.animate !== "function") {
+    apply();
+    return;
+  }
+  const fromDrag = Boolean(ghost);
+  if (!ghost) ghost = ghostFor(operation);
+  const to = target.getBoundingClientRect();
+  let from = ghost.getBoundingClientRect();
+  const targetX = to.left + (to.width - from.width) / 2;
+  if (!fromDrag && !visible(from)) {
+    position(ghost, targetX - 17, Math.max(10, to.top - 35));
+    from = ghost.getBoundingClientRect();
+  }
+  const dx = targetX - from.left;
+  const dy = to.bottom - from.height - 2 - from.top;
+  const lift = fromDrag ? 0 : Math.min(operation.group ? 35 : 18, Math.abs(dx) / 8);
+  const animation = ghost.animate([
+    { transform: "translate(0, 0)" },
+    { transform: "translate(" + dx * .49 + "px, " + (dy * .49 - lift) + "px)", offset: .49 },
+    { transform: "translate(" + dx + "px, " + dy + "px)" },
+  ], { duration: fromDrag ? 165 : operation.group ? 610 : 325, easing: "cubic-bezier(.28,.12,.22,1)", fill: "forwards" });
+
+  const pending = { animation, operation, ghost };
+  flight = pending;
+  updateResultControls();
+  try {
+    await animation.finished;
+  } catch {
+    return;
+  }
+  if (flight !== pending) return;
+  flight = null;
+  apply();
+}
+
+function clearDrag(keepGhost = false) {
+  if (!drag) return;
+  const { operation, pointer, ghost } = drag;
+  drag = null;
+  if (operation.handle.hasPointerCapture(pointer)) operation.handle.releasePointerCapture(pointer);
+  operation.destination.classList.remove("drop-hint", "drop-over");
+  document.body.classList.remove("dragging");
+  if (!keepGhost) discard(operation, ghost);
+}
+
+function cancelWork() {
+  clearDrag();
+  divisionPreview = null;
+  if (!flight) return;
+  const pending = flight;
+  flight = null;
+  pending.animation.cancel();
+  discard(pending.operation, pending.ghost);
+  updateResultControls();
+}
+
+function hitTarget(operation, event) {
+  const rect = operation.destination.getBoundingClientRect();
+  return event.clientX >= rect.left - 6 && event.clientX <= rect.right + 6 &&
+    event.clientY >= rect.top - 8 && event.clientY <= rect.bottom + 7;
+}
+
+function clickInBoard(event) {
+  const operation = operationFor(event.target);
+  if (!operation) return;
+  if (event.detail > 0 && swallowClick === operation.handle) {
+    swallowClick = null;
+    return;
+  }
+  if (!drag) performOperation(operation, null, event.detail === 0);
+}
+
+function startDrag(event) {
+  swallowClick = null;
+  if (!event.isPrimary || event.button !== 0 || drag) return;
+  const operation = operationFor(event.target);
+  if (!allowed(operation)) return;
+  const rect = operation.origin.getBoundingClientRect();
+  drag = {
+    operation,
+    pointer: event.pointerId,
+    x: event.clientX,
+    y: event.clientY,
+    offsetX: operation.group ? rect.width / 2 : event.clientX - rect.left,
+    offsetY: operation.group ? rect.height / 2 : event.clientY - rect.top,
+    ghost: null,
+  };
+  operation.handle.setPointerCapture(event.pointerId);
+}
+
+function followDrag(event) {
+  if (!drag || event.pointerId !== drag.pointer) return;
+  const { operation } = drag;
+  if (!drag.ghost) {
+    if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 7) return;
+    drag.ghost = ghostFor(operation);
+    operation.destination.classList.add("drop-hint");
+    document.body.classList.add("dragging");
+  }
+  event.preventDefault();
+  position(drag.ghost, event.clientX - drag.offsetX, event.clientY - drag.offsetY);
+  operation.destination.classList.toggle("drop-over", hitTarget(operation, event));
+}
+
+function finishDrag(event) {
+  if (!drag || event.pointerId !== drag.pointer) return;
+  const { operation, ghost } = drag;
+  if (ghost) swallowClick = operation.handle;
+  const dropped = Boolean(ghost) && hitTarget(operation, event);
+  clearDrag(dropped);
+  if (dropped) performOperation(operation, ghost);
+}
+
+function loseDrag(event) {
+  if (drag?.pointer === event.pointerId) clearDrag();
+}
+
+document.addEventListener("click", (event) => {
+  const clicked = event.target.closest?.(".operation-menu");
+  for (const board of Object.values(boards)) {
+    if (board.menu.open && board.menu !== clicked) closeMenu(board);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (drag) {
+    if (drag.ghost) swallowClick = drag.operation.handle;
+    clearDrag();
+    return;
+  }
+  const open = Object.values(boards).find((board) => board.menu.open);
+  if (open) {
+    closeMenu(open);
+    open.menuButton.focus({ preventScroll: true });
+  } else if (divisionPreview) {
+    dropDivision(boards[divisionPreview.key]);
+  } else if (presenting && !document.fullscreenElement) {
+    setPresentation(false);
+  }
+});
+
+const tabs = [byId("tab-single"), byId("tab-system")];
+
+function selectTab(tab, focus = false) {
+  const destination = tab.getAttribute("aria-controls");
+  if (activeMode === destination) {
+    if (focus) tab.focus();
+    return;
+  }
+  cancelWork();
+  for (const board of Object.values(boards)) closeMenu(board);
+  activeMode = destination;
+  for (const item of tabs) {
+    const selected = item === tab;
+    item.setAttribute("aria-selected", String(selected));
+    item.tabIndex = selected ? 0 : -1;
+    byId(item.getAttribute("aria-controls")).hidden = !selected;
+  }
+  byId(activeMode + "-controls").append(controlArea);
+  render();
+  if (focus) tab.focus();
+}
+
+tabs.forEach((tab, index) => {
+  tab.addEventListener("click", () => selectTab(tab));
+  tab.addEventListener("keydown", (event) => {
+    const next = { ArrowLeft: 1 - index, ArrowRight: 1 - index, Home: 0, End: 1 }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    selectTab(tabs[next], true);
+  });
+});
+
+const fullscreen = byId("fullscreen");
+
+function setPresentation(enabled) {
+  presenting = enabled;
+  document.body.classList.toggle("presenting", enabled);
+  if (enabled) {
+    for (const mode of Object.values(available)) {
+      mode.editing = false;
+      mode.entry.hidden = true;
+    }
+  }
+  syncControls();
+  const label = enabled ? "Tafelansicht beenden" : "Tafelansicht öffnen";
+  fullscreen.setAttribute("aria-label", label);
+  fullscreen.setAttribute("aria-pressed", String(enabled));
+  byId("fullscreen-text").textContent = enabled ? "Tafelansicht beenden" : "Tafelansicht";
+  byId("fullscreen-icon").setAttribute("d", enabled
+    ? "M4 9h5V4m6 0v5h5m0 6h-5v5m-6 0v-5H4"
+    : "M4 9V4h5m6 0h5v5m0 6v5h-5m-6 0H4v-5");
+}
+
+fullscreen.addEventListener("click", async () => {
+  if (changingPresentation) return;
+  changingPresentation = true;
+  setPresentation(!presenting);
+  try {
+    if (presenting && document.fullscreenEnabled && !document.fullscreenElement) {
+      ownsFullscreen = true;
+      await document.documentElement.requestFullscreen();
+    } else if (!presenting && ownsFullscreen && document.fullscreenElement) {
+      await document.exitFullscreen();
+    }
+  } catch {
+    ownsFullscreen = false;
+  } finally {
+    changingPresentation = false;
+  }
+});
+
+document.addEventListener("fullscreenchange", () => {
+  if (ownsFullscreen && !document.fullscreenElement) {
+    ownsFullscreen = false;
+    setPresentation(false);
+  }
+});
+
+render();
+  </script>
+</body>
+</html>
